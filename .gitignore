@@ -1,2 +1,5 @@
 vendor
 ggr-ui
+
+.idea
+*.iml

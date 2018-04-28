@@ -1,0 +1,20 @@
+== Quick Start Guide
+
+. Prerequisites:
+    * One or more https://github.com/aerokube/selenoid[Selenoid] hosts
+    * A directory with http://aerokube.com/ggr/latest/#_creating_quota_files[XML quota files] for Ggr
+. Start Ggr UI binary or container:
++
+```
+$ ./ggr-ui -quota-dir /path/to/quota/dir # As a binary
+
+$ docker run -d --name ggr-ui -p 8888:8888 -v /path/to/quota/dir:/etc/grid-router/quota:ro aerokube/ggr-ui:latest-release
+```
++
+Binaries as usually can be downloaded from https://github.com/aerokube/ggr-ui/releases[releases page].
+. Now start https://github.com/aerokube/selenoid-ui[Selenoid UI] and point it to `http://localhost:8888`. It should start showing sessions running anywhere in Selenium cluster behind Ggr.
+. You can also use `/status` API similarly to Selenoid http://aerokube.com/selenoid/latest/#_usage_statistics[/status] API:
++
+```
+$ curl -s http://localhost:8888/status 
+``` 

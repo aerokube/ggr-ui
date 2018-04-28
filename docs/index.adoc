@@ -1,0 +1,20 @@
+= Ggr UI
+:revdate: {docdate}
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectanchors:
+:Author: Alexander Andryashin  and the Aerokube community
+:revnumber: latest
+:icons: font
+:source-highlighter: coderay
+:docinfo: shared
+
+This reference covers version: _{revnumber}_
+
+Ggr UI is a standalone daemon that automatically collects `/status` information from multiple https://github.com/aerokube/selenoid[Selenoid] instances and returns it as a single `/status` API. When this daemon is running you can use https://github.com/aerokube/selenoid-ui[Selenoid UI] to see the state of the entire cluster.
+
+== Getting Started
+include::quick-start-guide.adoc[leveloffset=+1]
+
+include::contributing.adoc[]
