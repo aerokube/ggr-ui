@@ -1,5 +1,6 @@
 vendor
 ggr-ui
+coverage.txt
 
 .idea
 *.iml

@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/aandryashin/matchers"
+  packages = [".","httpresp"]
+  revision = "435295ea180e58dbfa526db1ebab8c801b4c2b75"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["websocket"]
   revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
@@ -10,6 +16,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e3a5fa808a45f7d729055df7d9ccd68c0a05412e805bcd8a6d15d46598ab2993"
+  inputs-digest = "85d9b945a470bf961413474e70aded2ec2bd2608ac22ab2c1fbfcf19bb6248e3"
   solver-name = "gps-cdcl"
   solver-version = 1

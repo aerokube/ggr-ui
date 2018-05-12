@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"golang.org/x/net/websocket"
+	"time"
 )
 
 type Status map[string]interface{}
@@ -17,10 +18,12 @@ var paths = struct {
 	Status string
 	VNC    string
 	Logs   string
+	Ping   string
 }{
 	Status: "/status",
 	VNC:    "/vnc/",
 	Logs:   "/logs/",
+	Ping:   "/ping",
 }
 
 func mux() http.Handler {
@@ -28,6 +31,7 @@ func mux() http.Handler {
 	mux.HandleFunc(paths.Status, status)
 	mux.Handle(paths.VNC, websocket.Handler(proxyWS(paths.VNC)))
 	mux.Handle(paths.Logs, websocket.Handler(proxyWS(paths.Logs)))
+	mux.HandleFunc(paths.Ping, ping)
 	return mux
 }
 
@@ -122,4 +126,12 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		io.Copy(conn, wsconn)
 		log.Printf("ws client disconnected %s", u)
 	}
+}
+
+func ping(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(struct {
+		Uptime  string `json:"uptime"`
+		Version string `json:"version"`
+	}{time.Since(startTime).String(), gitRevision})
 }
