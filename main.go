@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aandryashin/ggr-ui/config"
+	"github.com/aerokube/ggr-ui/config"
 )
 
 var (
@@ -30,6 +30,12 @@ var (
 	limit       int
 	quotaDir    string
 	gracePeriod time.Duration
+
+	version     bool
+	gitRevision = "HEAD"
+	buildStamp  = "unknown"
+
+	startTime = time.Now()
 )
 
 func configure() error {
@@ -68,7 +74,14 @@ func init() {
 	flag.IntVar(&limit, "limit", 10, "simultaneous http requests")
 	flag.StringVar(&quotaDir, "quota-dir", "quota", "quota directory")
 	flag.DurationVar(&gracePeriod, "grace-period", 300*time.Second, "graceful shutdown period")
+	flag.BoolVar(&version, "version", false, "Show version and exit")
 	flag.Parse()
+
+	if version {
+		showVersion()
+		os.Exit(0)
+	}
+
 	limitCh = make(chan struct{}, limit)
 	err := configure()
 	if err != nil {
@@ -102,4 +115,9 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("shuting down: %v\n", err)
 	}
+}
+
+func showVersion() {
+	fmt.Printf("Git Revision: %s\n", gitRevision)
+	fmt.Printf("UTC Build Time: %s\n", buildStamp)
 }
