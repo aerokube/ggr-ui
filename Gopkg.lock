@@ -15,6 +15,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/aerokube/util"
+  packages = ["."]
+  revision = "2fa5cda33a2e16b7639e40386ca232c9f6cf9475"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["websocket"]
   revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
@@ -22,6 +28,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c1383df0a23585b25c49a6c994fa19d1b20fc5781e95497e351261df76527120"
+  inputs-digest = "48153914c6db99b439eea0509a78656e2b01f7266c784f164ce09138be3e8679"
   solver-name = "gps-cdcl"
   solver-version = 1

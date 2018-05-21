@@ -48,12 +48,12 @@ func configure() error {
 	for _, fn := range files {
 		file, err := ioutil.ReadFile(fn)
 		if err != nil {
-			log.Printf("error reading configuration file %s: %v", fn, err)
+			log.Printf("[INIT] [Error reading configuration file %s: %v]", fn, err)
 			continue
 		}
 		var browsers config.Browsers
 		if err := xml.Unmarshal(file, &browsers); err != nil {
-			log.Printf("error parsing configuration file %s: %v", fn, err)
+			log.Printf("[INIT] [Error parsing configuration file %s: %v]", fn, err)
 			continue
 		}
 		for _, b := range browsers.Browsers {
@@ -88,7 +88,7 @@ func init() {
 	limitCh = make(chan struct{}, limit)
 	err := configure()
 	if err != nil {
-		log.Fatalf("loading quota files: %v\n", err)
+		log.Fatalf("[INIT] [Failed to load quota files: %v]", err)
 	}
 
 	sig := make(chan os.Signal)
@@ -116,15 +116,15 @@ func main() {
 	}()
 	select {
 	case err := <-e:
-		log.Fatalf("starting http server: %v\n", err)
+		log.Fatalf("[INIT] [Failed to start http server: %v]", err)
 	case <-stop:
 	}
 
-	log.Printf("starting shutdown in %v\n", gracePeriod)
+	log.Printf("[SHUTDOWN] [Shutting down in %v]", gracePeriod)
 	ctx, cancel := context.WithTimeout(context.Background(), gracePeriod)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("shuting down: %v\n", err)
+		log.Fatalf("[SHUTDOWN] [Failed to shut down: %v]", err)
 	}
 }
 
