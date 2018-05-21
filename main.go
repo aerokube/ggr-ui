@@ -3,10 +3,8 @@ package main
 import (
 	"context"
 	"crypto/md5"
-	"encoding/xml"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -17,7 +15,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aerokube/ggr-ui/config"
+	"io/ioutil"
+	"encoding/xml"
+	"github.com/aerokube/ggr/config"
 )
 
 var (
