@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/md5"
 	"flag"
 	"fmt"
 	"log"
@@ -15,12 +14,14 @@ import (
 	"syscall"
 	"time"
 
-	"io/ioutil"
 	"encoding/xml"
 	"github.com/aerokube/ggr/config"
+	"io/ioutil"
+	"sync"
 )
 
 var (
+	lock    sync.RWMutex
 	hosts   = make(map[string]string)
 	limitCh chan struct{}
 )
@@ -47,12 +48,12 @@ func configure() error {
 	for _, fn := range files {
 		file, err := ioutil.ReadFile(fn)
 		if err != nil {
-			log.Printf("error reading configuration file %s: %v", fn, err)
+			log.Printf("[INIT] [Error reading configuration file %s: %v]", fn, err)
 			continue
 		}
 		var browsers config.Browsers
 		if err := xml.Unmarshal(file, &browsers); err != nil {
-			log.Printf("error parsing configuration file %s: %v", fn, err)
+			log.Printf("[INIT] [Error parsing configuration file %s: %v]", fn, err)
 			continue
 		}
 		for _, b := range browsers.Browsers {
@@ -60,7 +61,9 @@ func configure() error {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
 						url := fmt.Sprintf("http://%s", net.JoinHostPort(h.Name, strconv.Itoa(h.Port)))
-						hosts[fmt.Sprintf("%x", md5.Sum([]byte(url)))] = url
+						lock.Lock()
+						hosts[h.Sum()] = url
+						lock.Unlock()
 					}
 				}
 			}
@@ -85,9 +88,17 @@ func init() {
 	limitCh = make(chan struct{}, limit)
 	err := configure()
 	if err != nil {
-		log.Fatalf("loading quota files: %v\n", err)
+		log.Fatalf("[INIT] [Failed to load quota files: %v]", err)
 	}
 
+	sig := make(chan os.Signal)
+	signal.Notify(sig, syscall.SIGHUP)
+	go func() {
+		for {
+			<-sig
+			configure()
+		}
+	}()
 }
 
 func main() {
@@ -105,15 +116,15 @@ func main() {
 	}()
 	select {
 	case err := <-e:
-		log.Fatalf("starting http server: %v\n", err)
+		log.Fatalf("[INIT] [Failed to start http server: %v]", err)
 	case <-stop:
 	}
 
-	log.Printf("starting shutdown in %v\n", gracePeriod)
+	log.Printf("[SHUTDOWN] [Shutting down in %v]", gracePeriod)
 	ctx, cancel := context.WithTimeout(context.Background(), gracePeriod)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("shuting down: %v\n", err)
+		log.Fatalf("[SHUTDOWN] [Failed to shut down: %v]", err)
 	}
 }
 

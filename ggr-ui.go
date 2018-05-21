@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/aerokube/util"
 	"golang.org/x/net/websocket"
 	"time"
 )
@@ -37,17 +38,20 @@ func mux() http.Handler {
 
 func status(w http.ResponseWriter, r *http.Request) {
 	s := make(Status)
-	for sum, url := range hosts {
-		resp, err := http.Get(url + paths.Status)
+	lock.RLock()
+	defer lock.RUnlock()
+	_, remote := util.RequestInfo(r)
+	for sum, u := range hosts {
+		resp, err := http.Get(u + paths.Status)
 		if err != nil {
-			log.Printf("quering %s: %v", url, err)
+			log.Printf("[STATUS] [Failed to fetch status from %s: %v] [%s]", u, err, remote)
 			continue
 		}
 		defer resp.Body.Close()
 		m := make(map[string]interface{})
 		err = json.NewDecoder(resp.Body).Decode(&m)
 		if err != nil {
-			log.Printf("parsing response from %s: %v", url, err)
+			log.Printf("[STATUS] [Failed to parse response from %s: %v] [%s]", u, err, remote)
 			continue
 		}
 		s.Add(sum, m)
@@ -89,31 +93,34 @@ func (cur Status) Add(sum string, m map[string]interface{}) {
 
 func proxyWS(p string) func(wsconn *websocket.Conn) {
 	return func(wsconn *websocket.Conn) {
-		log.Printf("new ws connection\n")
+		_, remote := util.RequestInfo(wsconn.Request())
+		log.Printf("[WEBSOCKET] [New connection] [%s]", remote)
 		defer wsconn.Close()
 		head := len(p)
 		tail := head + md5.Size*2
 		path := wsconn.Request().URL.Path
 		if len(path) < tail {
-			log.Printf("invalid ws request: %s\n", path)
+			log.Printf("[WEBSOCKET] [Invalid websocket request: %s] [%s]", path, remote)
 			return
 		}
 		sum := path[head:tail]
+		lock.RLock()
 		host, ok := hosts[sum]
+		lock.RUnlock()
 		if !ok {
-			log.Printf("unknown host\n")
+			log.Printf("[WEBSOCKET] [Unknown host sum: %s] [%s]", sum, remote)
 			return
 		}
 		u, err := url.Parse(host + p + path[tail:])
 		if err != nil {
-			log.Printf("parse url %s: %v\n", u, err)
+			log.Printf("[WEBSOCKET] [Failed to parse url %s: %v] [%s]", u, err, remote)
 			return
 		}
 		u.Scheme = "ws"
-		log.Printf("start ws session to %s", u)
+		log.Printf("[WEBSOCKET] [Starting websocket session to %s] [%s]", u, remote)
 		conn, err := websocket.Dial(u.String(), "", "http://localhost")
 		if err != nil {
-			log.Printf("start ws session: %v", err)
+			log.Printf("[WEBSOCKET] [Failed start websocket session to %s: %v] [%s]", u, err, remote)
 			return
 		}
 		defer conn.Close()
@@ -121,10 +128,10 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		go func() {
 			io.Copy(wsconn, conn)
 			wsconn.Close()
-			log.Printf("ws session closed %s", u)
+			log.Printf("[WEBSOCKET] [Closed websocket session to %s] [%s]", u, remote)
 		}()
 		io.Copy(conn, wsconn)
-		log.Printf("ws client disconnected %s", u)
+		log.Printf("[WEBSOCKET] [Client disconnected: %s] [%s]", u, remote)
 	}
 }
 
