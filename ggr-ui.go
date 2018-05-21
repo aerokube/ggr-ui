@@ -37,6 +37,8 @@ func mux() http.Handler {
 
 func status(w http.ResponseWriter, r *http.Request) {
 	s := make(Status)
+	lock.RLock()
+	defer lock.RUnlock()
 	for sum, url := range hosts {
 		resp, err := http.Get(url + paths.Status)
 		if err != nil {
@@ -99,7 +101,9 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 			return
 		}
 		sum := path[head:tail]
+		lock.RLock()
 		host, ok := hosts[sum]
+		lock.RUnlock()
 		if !ok {
 			log.Printf("unknown host\n")
 			return

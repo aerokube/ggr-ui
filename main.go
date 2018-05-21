@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/md5"
 	"flag"
 	"fmt"
 	"log"
@@ -15,12 +14,14 @@ import (
 	"syscall"
 	"time"
 
-	"io/ioutil"
 	"encoding/xml"
 	"github.com/aerokube/ggr/config"
+	"io/ioutil"
+	"sync"
 )
 
 var (
+	lock    sync.RWMutex
 	hosts   = make(map[string]string)
 	limitCh chan struct{}
 )
@@ -60,7 +61,9 @@ func configure() error {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
 						url := fmt.Sprintf("http://%s", net.JoinHostPort(h.Name, strconv.Itoa(h.Port)))
-						hosts[fmt.Sprintf("%x", md5.Sum([]byte(url)))] = url
+						lock.Lock()
+						hosts[h.Sum()] = url
+						lock.Unlock()
 					}
 				}
 			}
@@ -88,6 +91,14 @@ func init() {
 		log.Fatalf("loading quota files: %v\n", err)
 	}
 
+	sig := make(chan os.Signal)
+	signal.Notify(sig, syscall.SIGHUP)
+	go func() {
+		for {
+			<-sig
+			configure()
+		}
+	}()
 }
 
 func main() {
