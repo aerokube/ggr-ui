@@ -40,6 +40,7 @@ var (
 )
 
 func configure() error {
+	log.Printf("[INIT] [Loading quota files from %s]", quotaDir)
 	glob := fmt.Sprintf("%s%c%s", quotaDir, filepath.Separator, "*.xml")
 	files, _ := filepath.Glob(glob)
 	if len(files) == 0 {
@@ -106,6 +107,7 @@ func main() {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
+	log.Printf("[INIT] [Listen on %s]", listen)
 	server := &http.Server{
 		Addr:    listen,
 		Handler: mux(),
