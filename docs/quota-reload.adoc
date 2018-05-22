@@ -1,0 +1,7 @@
+== Quota Reloading
+To **reload quota files** just send **SIGHUP** to process or Docker container:
+```
+# kill -HUP <pid>
+# docker kill -s HUP <container-id-or-name>
+```
+NOTE: Use only one of these commands depending on whether you have Docker installed.
