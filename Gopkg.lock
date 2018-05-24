@@ -4,7 +4,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/aandryashin/matchers"
-  packages = [".","httpresp"]
+  packages = [
+    ".",
+    "httpresp"
+  ]
   revision = "435295ea180e58dbfa526db1ebab8c801b4c2b75"
 
 [[projects]]
@@ -21,6 +24,60 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/beorn7/perks"
+  packages = ["quantile"]
+  revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
+
+[[projects]]
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/matttproud/golang_protobuf_extensions"
+  packages = ["pbutil"]
+  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/prometheus/client_golang"
+  packages = [
+    "prometheus",
+    "prometheus/promhttp"
+  ]
+  revision = "c5b7fccd204277076155f10851dad72b76a49317"
+  version = "v0.8.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/client_model"
+  packages = ["go"]
+  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/common"
+  packages = [
+    "expfmt",
+    "internal/bitbucket.org/ww/goautoneg",
+    "model"
+  ]
+  revision = "7600349dcfe1abd18d72d3a1770870d9800a7801"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/procfs"
+  packages = [
+    ".",
+    "internal/util",
+    "nfs",
+    "xfs"
+  ]
+  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["websocket"]
   revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
@@ -28,6 +85,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "48153914c6db99b439eea0509a78656e2b01f7266c784f164ce09138be3e8679"
+  inputs-digest = "152e877c6d8c81df47bb36346629a5bbc5433a251abd4fb3b8b93b432c5b3b56"
   solver-name = "gps-cdcl"
   solver-version = 1

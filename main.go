@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/xml"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -11,13 +13,11 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
-	"encoding/xml"
 	"github.com/aerokube/ggr/config"
-	"io/ioutil"
-	"sync"
 )
 
 var (
@@ -28,6 +28,7 @@ var (
 
 var (
 	listen      string
+	timeout     time.Duration
 	limit       int
 	quotaDir    string
 	gracePeriod time.Duration
@@ -77,6 +78,7 @@ func configure() error {
 
 func init() {
 	flag.StringVar(&listen, "listen", ":8888", "host and port to listen to")
+	flag.DurationVar(&timeout, "timeout", 30*time.Second, "request timeout")
 	flag.IntVar(&limit, "limit", 10, "simultaneous http requests")
 	flag.StringVar(&quotaDir, "quota-dir", "quota", "quota directory")
 	flag.DurationVar(&gracePeriod, "grace-period", 300*time.Second, "graceful shutdown period")
