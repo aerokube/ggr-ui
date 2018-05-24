@@ -11,6 +11,7 @@ import (
 	"github.com/aerokube/util"
 	"golang.org/x/net/websocket"
 	"time"
+	"context"
 )
 
 type Status map[string]interface{}
@@ -37,24 +38,47 @@ func mux() http.Handler {
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
-	s := make(Status)
 	lock.RLock()
 	defer lock.RUnlock()
 	_, remote := util.RequestInfo(r)
-	for sum, u := range hosts {
-		resp, err := http.Get(u + paths.Status)
-		if err != nil {
-			log.Printf("[STATUS] [Failed to fetch status from %s: %v] [%s]", u, err, remote)
-			continue
+	ch := make(chan struct{}, limit)
+	rslt := make(chan Status)
+	for _, u := range hosts {
+		ch <- struct{}{}
+		go func(u string) {
+			defer func() {
+				<-ch
+			}()
+			r, err := http.NewRequest(http.MethodGet, u+paths.Status, nil)
+			if err != nil {
+				rslt <- nil
+				log.Printf("[STATUS] [Failed to fetch status from %s: %v] [%s]", u, err, remote)
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+			resp, err := http.DefaultClient.Do(r.WithContext(ctx))
+			if err != nil {
+				rslt <- nil
+				log.Printf("[STATUS] [Failed to fetch status from %s: %v] [%s]", u, err, remote)
+				return
+			}
+			defer resp.Body.Close()
+			m := make(map[string]interface{})
+			err = json.NewDecoder(resp.Body).Decode(&m)
+			if err != nil {
+				rslt <- nil
+				log.Printf("[STATUS] [Failed to parse response from %s: %v] [%s]", u, err, remote)
+				return
+			}
+			rslt <- m
+		}(u)
+	}
+	s := make(Status)
+	for sum, _ := range hosts {
+		if m := <-rslt; m != nil {
+			s.Add(sum, <-rslt)
 		}
-		defer resp.Body.Close()
-		m := make(map[string]interface{})
-		err = json.NewDecoder(resp.Body).Decode(&m)
-		if err != nil {
-			log.Printf("[STATUS] [Failed to parse response from %s: %v] [%s]", u, err, remote)
-			continue
-		}
-		s.Add(sum, m)
 	}
 	json.NewEncoder(w).Encode(s)
 }
@@ -76,11 +100,10 @@ func (cur Status) Add(sum string, m map[string]interface{}) {
 					}
 				}
 			}
-			if _, ok := cur[k].([]interface{}); ok {
-				cur[k] = append(cur[k].([]interface{}), v.([]interface{})...)
-			} else {
-				cur[k] = append([]interface{}{}, v.([]interface{})...)
+			if _, ok := cur[k].([]interface{}); !ok {
+				cur[k] = []interface{}{}
 			}
+			cur[k] = append(cur[k].([]interface{}), v.([]interface{})...)
 		case map[string]interface{}:
 			if _, ok := cur[k].(map[string]interface{}); !ok {
 				cur[k] = make(map[string]interface{})
