@@ -1,0 +1,17 @@
+== CLI Flags
+
+The following flags are supported by ```ggr-ui``` command:
+```
+  -grace-period duration
+    	graceful shutdown period (default 5m0s)
+  -limit int
+    	simultaneous http requests (default 10)
+  -listen string
+    	host and port to listen to (default ":8888")
+  -quota-dir string
+    	quota directory (default "quota")
+  -timeout duration
+    	request timeout (default 30s)
+  -version
+    	Show version and exit
+```

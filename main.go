@@ -23,7 +23,6 @@ import (
 var (
 	lock    sync.RWMutex
 	hosts   = make(map[string]string)
-	limitCh chan struct{}
 )
 
 var (
@@ -90,7 +89,6 @@ func init() {
 		os.Exit(0)
 	}
 
-	limitCh = make(chan struct{}, limit)
 	err := configure()
 	if err != nil {
 		log.Fatalf("[INIT] [Failed to load quota files: %v]", err)
@@ -107,7 +105,6 @@ func init() {
 }
 
 func main() {
-	limitCh = make(chan struct{}, limit)
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
