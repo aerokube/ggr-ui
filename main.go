@@ -46,6 +46,7 @@ func configure() error {
 	if len(files) == 0 {
 		return fmt.Errorf("no quota XML files found in %s", quotaDir)
 	}
+	newHosts := make(map[string]string)
 	for _, fn := range files {
 		file, err := ioutil.ReadFile(fn)
 		if err != nil {
@@ -62,14 +63,15 @@ func configure() error {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
 						url := fmt.Sprintf("http://%s", net.JoinHostPort(h.Name, strconv.Itoa(h.Port)))
-						lock.Lock()
-						hosts[h.Sum()] = url
-						lock.Unlock()
+						newHosts[h.Sum()] = url
 					}
 				}
 			}
 		}
 	}
+	lock.Lock()
+	defer lock.Unlock()
+	hosts = newHosts
 	return nil
 }
 
