@@ -17,5 +17,6 @@ Ggr UI is a standalone daemon that automatically collects `/status` information 
 == Getting Started
 include::quick-start-guide.adoc[leveloffset=+1]
 include::quota-reload.adoc[leveloffset=+1]
+include::cli-flags.adoc[leveloffset=+1]
 
 include::contributing.adoc[]
