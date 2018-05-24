@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/xml"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -11,13 +13,11 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
-	"encoding/xml"
 	"github.com/aerokube/ggr/config"
-	"io/ioutil"
-	"sync"
 )
 
 var (

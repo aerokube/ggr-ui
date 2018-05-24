@@ -1,17 +1,18 @@
 package main
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/aerokube/util"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/websocket"
-	"time"
-	"context"
 )
 
 type Status map[string]interface{}
@@ -30,6 +31,7 @@ var paths = struct {
 
 func mux() http.Handler {
 	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc(paths.Status, status)
 	mux.Handle(paths.VNC, websocket.Handler(proxyWS(paths.VNC)))
 	mux.Handle(paths.Logs, websocket.Handler(proxyWS(paths.Logs)))
