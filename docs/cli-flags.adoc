@@ -10,6 +10,8 @@ The following flags are supported by ```ggr-ui``` command:
     	host and port to listen to (default ":8888")
   -quota-dir string
     	quota directory (default "quota")
+  -response-time duration
+    	response time limit (default 2s)
   -timeout duration
     	request timeout (default 30s)
   -version
