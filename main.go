@@ -7,12 +7,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -21,16 +19,17 @@ import (
 )
 
 var (
-	lock    sync.RWMutex
-	hosts   = make(map[string]string)
+	lock  sync.RWMutex
+	hosts = make(map[string]string)
 )
 
 var (
-	listen      string
-	timeout     time.Duration
-	limit       int
-	quotaDir    string
-	gracePeriod time.Duration
+	listen       string
+	timeout      time.Duration
+	responseTime time.Duration
+	limit        int
+	quotaDir     string
+	gracePeriod  time.Duration
 
 	version     bool
 	gitRevision = "HEAD"
@@ -62,8 +61,7 @@ func configure() error {
 			for _, v := range b.Versions {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
-						url := fmt.Sprintf("http://%s", net.JoinHostPort(h.Name, strconv.Itoa(h.Port)))
-						newHosts[h.Sum()] = url
+						newHosts[h.Sum()] = h.Route()
 					}
 				}
 			}
@@ -78,6 +76,7 @@ func configure() error {
 func init() {
 	flag.StringVar(&listen, "listen", ":8888", "host and port to listen to")
 	flag.DurationVar(&timeout, "timeout", 30*time.Second, "request timeout")
+	flag.DurationVar(&responseTime, "response-time", 2*time.Second, "response time limit")
 	flag.IntVar(&limit, "limit", 10, "simultaneous http requests")
 	flag.StringVar(&quotaDir, "quota-dir", "quota", "quota directory")
 	flag.DurationVar(&gracePeriod, "grace-period", 300*time.Second, "graceful shutdown period")
