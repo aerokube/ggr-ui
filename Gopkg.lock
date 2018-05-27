@@ -3,15 +3,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/aandryashin/matchers"
-  packages = [
-    ".",
-    "httpresp"
-  ]
-  revision = "435295ea180e58dbfa526db1ebab8c801b4c2b75"
-
-[[projects]]
-  branch = "master"
   name = "github.com/aerokube/ggr"
   packages = ["config"]
   revision = "858d031070f407076b2bcfb40e0f133f14544583"
@@ -85,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "152e877c6d8c81df47bb36346629a5bbc5433a251abd4fb3b8b93b432c5b3b56"
+  inputs-digest = "847609ba4ccee70cf86a148d709f21057cd9f961dc9d7580c26ee39a79755ea4"
   solver-name = "gps-cdcl"
   solver-version = 1
