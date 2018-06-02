@@ -41,20 +41,25 @@ func mux() http.Handler {
 	return mux
 }
 
+type result struct {
+	sum    string
+	status Status
+}
+
 func status(w http.ResponseWriter, r *http.Request) {
 	lock.RLock()
 	defer lock.RUnlock()
 	_, remote := util.RequestInfo(r)
 	ch := make(chan struct{}, limit)
-	rslt := make(chan Status)
+	rslt := make(chan *result)
 	done := make(chan Status)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func(ctx context.Context) {
-		for _, u := range hosts {
+		for sum, u := range hosts {
 			select {
 			case ch <- struct{}{}:
-				go func(ctx context.Context, u string) {
+				go func(ctx context.Context, sum, u string) {
 					defer func() {
 						<-ch
 					}()
@@ -80,8 +85,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 						log.Printf("[STATUS] [Failed to parse response: %v] [%s]", err, remote)
 						return
 					}
-					rslt <- m
-				}(ctx, u)
+					rslt <- &result{sum, m}
+				}(ctx, sum, u)
 			case <-ctx.Done():
 				return
 			}
@@ -90,11 +95,11 @@ func status(w http.ResponseWriter, r *http.Request) {
 	go func(ctx context.Context) {
 		s := make(Status)
 	loop:
-		for sum, _ := range hosts {
+		for i := 0; i < len(hosts); i++ {
 			select {
-			case m := <-rslt:
-				if m != nil {
-					s.Add(sum, m)
+			case result := <-rslt:
+				if result != nil && result.status != nil {
+					s.Add(result.sum, result.status)
 				}
 			case <-time.After(responseTime):
 				break loop
@@ -105,11 +110,10 @@ func status(w http.ResponseWriter, r *http.Request) {
 		done <- s
 	}(ctx)
 	select {
-	case <-w.(http.CloseNotifier).CloseNotify():
-		cancel()
 	case s := <-done:
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(s)
+	case <-w.(http.CloseNotifier).CloseNotify():
 	}
 }
 
