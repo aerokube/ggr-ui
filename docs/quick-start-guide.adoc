@@ -13,6 +13,8 @@ $ docker run -d --name ggr-ui -p 8888:8888 -v /path/to/quota/dir:/etc/grid-route
 +
 Binaries as usually can be downloaded from https://github.com/aerokube/ggr-ui/releases[releases page].
 . Now start https://github.com/aerokube/selenoid-ui[Selenoid UI] and point it to `http://localhost:8888`. It should start showing sessions running anywhere in Selenium cluster behind Ggr.
++
+NOTE: If you are linking Selenoid UI and Ggr UI containers, then URI should be `http://<ggr-ui-container-name>:8888`, e.g. `http://ggr-ui:8888`.
 . You can also use `/status` API similarly to Selenoid http://aerokube.com/selenoid/latest/#_usage_statistics[/status] API:
 +
 ```
