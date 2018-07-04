@@ -529,7 +529,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Alexander Andryashin and the Aerokube community</span><br>
 <span id="revnumber">version latest,</span>
-<span id="revdate">2018-06-02</span>
+<span id="revdate">2018-07-04</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -595,6 +595,18 @@ $ docker run -d --name ggr-ui -p 8888:8888 -v /path/to/quota/dir:/etc/grid-route
 </li>
 <li>
 <p>Now start <a href="https://github.com/aerokube/selenoid-ui">Selenoid UI</a> and point it to <code><a href="http://localhost:8888" class="bare">http://localhost:8888</a></code>. It should start showing sessions running anywhere in Selenium cluster behind Ggr.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you are linking Selenoid UI and Ggr UI containers, then URI should be <code><a href="http://&lt;ggr-ui-container-name&gt;:8888" class="bare">http://&lt;ggr-ui-container-name&gt;:8888</a></code>, e.g. <code><a href="http://ggr-ui:8888" class="bare">http://ggr-ui:8888</a></code>.
+</td>
+</tr>
+</table>
+</div>
 </li>
 <li>
 <p>You can also use <code>/status</code> API similarly to Selenoid <a href="http://aerokube.com/selenoid/latest/#_usage_statistics">/status</a> API:</p>
@@ -752,7 +764,7 @@ $ docker build -t ggr-ui:latest .</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version latest<br>
-Last updated 2018-06-02 12:02:50 UTC
+Last updated 2018-07-04 11:13:57 UTC
 </div>
 </div>
 </body>
