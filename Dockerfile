@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.8
 
 RUN apk add -U tzdata && rm -Rf /var/cache/apk/*
 COPY ggr-ui /usr/bin
