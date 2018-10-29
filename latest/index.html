@@ -529,7 +529,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Alexander Andryashin and the Aerokube community</span><br>
 <span id="revnumber">version latest,</span>
-<span id="revdate">2018-10-18</span>
+<span id="revdate">2018-10-29</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -678,16 +678,13 @@ Use only one of these commands depending on whether you have Docker installed.
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Install <a href="https://golang.org/doc/install">Golang</a></p>
+<p>Install <a href="https://golang.org/doc/install">Golang</a> 1.11 and above.</p>
 </li>
 <li>
-<p>Setup <code>$GOPATH</code> <a href="https://github.com/golang/go/wiki/GOPATH">properly</a></p>
-</li>
-<li>
-<p>Get Ggr UI source:</p>
+<p>Close Ggr UI source:</p>
 <div class="literalblock">
 <div class="content">
-<pre>$ go get -d github.com/aerokube/ggr-ui</pre>
+<pre>$ git clone https://github.com/aerokube/ggr-ui.git</pre>
 </div>
 </div>
 </li>
@@ -695,15 +692,7 @@ Use only one of these commands depending on whether you have Docker installed.
 <p>Go to project directory:</p>
 <div class="literalblock">
 <div class="content">
-<pre>$ cd $GOPATH/src/github.com/aerokube/ggr-ui</pre>
-</div>
-</div>
-</li>
-<li>
-<p>Checkout dependencies</p>
-<div class="literalblock">
-<div class="content">
-<pre>$ go get -u github.com/golang/dep/cmd/dep &amp;&amp; dep ensure</pre>
+<pre>$ cd ggr-ui</pre>
 </div>
 </div>
 </li>
@@ -713,6 +702,9 @@ Use only one of these commands depending on whether you have Docker installed.
 <div class="content">
 <pre>$ go build</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>This will also automatically fetch dependencies.</p>
 </div>
 </li>
 <li>
@@ -764,7 +756,7 @@ $ docker build -t ggr-ui:latest .</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version latest<br>
-Last updated 2018-10-18 07:23:27 UTC
+Last updated 2018-10-29 08:20:15 UTC
 </div>
 </div>
 </body>
