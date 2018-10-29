@@ -2,25 +2,22 @@
 
 To build Ggr UI:
 
-. Install https://golang.org/doc/install[Golang]
+. Install https://golang.org/doc/install[Golang] 1.11 and above.
 
-. Setup `$GOPATH` https://github.com/golang/go/wiki/GOPATH[properly]
+. Close Ggr UI source:
 
-. Get Ggr UI source:
-
-    $ go get -d github.com/aerokube/ggr-ui
+    $ git clone https://github.com/aerokube/ggr-ui.git
 
 . Go to project directory:
 
-    $ cd $GOPATH/src/github.com/aerokube/ggr-ui 
+    $ cd ggr-ui 
     
-. Checkout dependencies
-
-    $ go get -u github.com/golang/dep/cmd/dep && dep ensure
-
 . Build source:
 
     $ go build
+
++
+This will also automatically fetch dependencies.
 
 . Run Ggr UI:
 
