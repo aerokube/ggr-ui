@@ -214,7 +214,7 @@ func TestResponseTime(t *testing.T) {
 
 var (
 	silent = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		<-w.(http.CloseNotifier).CloseNotify()
+		<-r.Context().Done()
 	}))
 	empty = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,"browsers":{"chrome":{"60.0":{}},"firefox":{"59.0":{}}}}`)
@@ -234,41 +234,41 @@ type Case struct {
 
 func TestStatus(t *testing.T) {
 	cases := []Case{
-		Case{
+		{
 			Name:     "ConnectionRefused",
 			Expected: 0,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{nil, nil, nil},
 		},
-		Case{
+		{
 			Name:     "Timeout",
 			Expected: 0,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{silent},
 		},
-		Case{
+		{
 			Name:           "ClientDisconnected",
 			Expected:       0,
 			ContextTimeout: 100 * time.Millisecond,
 			Handlers:       []http.Handler{silent},
 		},
-		Case{
+		{
 			Name:     "TwoHostsDown",
 			Expected: 1,
 			Handlers: []http.Handler{nil, nil, empty},
 		},
-		Case{
+		{
 			Name:     "TwoHostsBroken",
 			Expected: 1,
 			Handlers: []http.Handler{broken, broken, empty},
 		},
-		Case{
+		{
 			Name:     "TwoHostsNoAnswer",
 			Expected: 1,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{silent, silent, empty},
 		},
-		Case{
+		{
 			Name:     "AllHostsUpAndRunning",
 			Expected: 3,
 			Handlers: []http.Handler{empty, empty, empty},

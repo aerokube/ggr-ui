@@ -47,8 +47,6 @@ type result struct {
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
-	lock.RLock()
-	defer lock.RUnlock()
 	_, remote := util.RequestInfo(r)
 	ch := make(chan struct{}, limit)
 	rslt := make(chan *result)
@@ -56,6 +54,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func(ctx context.Context) {
+		lock.RLock()
+		defer lock.RUnlock()
 		for sum, u := range hosts {
 			select {
 			case ch <- struct{}{}:
@@ -93,6 +93,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 		}
 	}(ctx)
 	go func(ctx context.Context) {
+		lock.RLock()
+		defer lock.RUnlock()
 		s := make(Status)
 	loop:
 		for i := 0; i < len(hosts); i++ {
@@ -113,7 +115,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	case s := <-done:
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(s)
-	case <-w.(http.CloseNotifier).CloseNotify():
+	case <-r.Context().Done():
 	}
 }
 
