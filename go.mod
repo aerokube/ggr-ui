@@ -1,6 +1,7 @@
 module github.com/aerokube/ggr-ui
 
 require (
+	github.com/aandryashin/reloader v0.0.0-20161127125235-da4f1b43ce40
 	github.com/aerokube/ggr v0.0.0-20181018070727-08e778c741ca
 	github.com/aerokube/util v0.0.0-20181001032247-3a9b3f70da09
 	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
