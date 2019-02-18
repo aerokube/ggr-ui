@@ -214,7 +214,7 @@ func TestResponseTime(t *testing.T) {
 
 var (
 	silent = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		<-w.(http.CloseNotifier).CloseNotify()
+		<-r.Context().Done()
 	}))
 	empty = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,"browsers":{"chrome":{"60.0":{}},"firefox":{"59.0":{}}}}`)

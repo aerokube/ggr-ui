@@ -53,7 +53,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan struct{}, limit)
 	rslt := make(chan *result)
 	done := make(chan Status)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 	go func(ctx context.Context) {
 		for sum, u := range hosts {
@@ -113,7 +113,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	case s := <-done:
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(s)
-	case <-w.(http.CloseNotifier).CloseNotify():
+	case <-r.Context().Done():
 	}
 }
 
