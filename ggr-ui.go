@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/aerokube/util"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/websocket"
 )
@@ -49,14 +49,20 @@ type result struct {
 func status(w http.ResponseWriter, r *http.Request) {
 	lock.RLock()
 	defer lock.RUnlock()
-	_, remote := util.RequestInfo(r)
+	user, remote := info(r)
+	quota, ok := hosts[user]
+	if !ok {
+		log.Printf("[STATUS] [Unknown quota user: %s] [%s]", user, remote)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 	ch := make(chan struct{}, limit)
 	rslt := make(chan *result)
 	done := make(chan Status)
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	go func(ctx context.Context) {
-		for sum, u := range hosts {
+	go func(ctx context.Context, quota map[string]string) {
+		for sum, u := range quota {
 			select {
 			case ch <- struct{}{}:
 				go func(ctx context.Context, sum, u string) {
@@ -91,11 +97,11 @@ func status(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}(ctx)
-	go func(ctx context.Context) {
+	}(ctx, quota)
+	go func(ctx context.Context, quota map[string]string) {
 		s := make(Status)
 	loop:
-		for i := 0; i < len(hosts); i++ {
+		for i := 0; i < len(quota); i++ {
 			select {
 			case result := <-rslt:
 				if result != nil && result.status != nil {
@@ -108,7 +114,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		done <- s
-	}(ctx)
+	}(ctx, quota)
 	select {
 	case s := <-done:
 		w.Header().Add("Content-Type", "application/json")
@@ -149,7 +155,7 @@ func (cur Status) Add(sum string, m map[string]interface{}) {
 
 func proxyWS(p string) func(wsconn *websocket.Conn) {
 	return func(wsconn *websocket.Conn) {
-		_, remote := util.RequestInfo(wsconn.Request())
+		user, remote := info(wsconn.Request())
 		log.Printf("[WEBSOCKET] [New connection] [%s]", remote)
 		defer wsconn.Close()
 		head := len(p)
@@ -161,7 +167,14 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		}
 		sum := path[head:tail]
 		lock.RLock()
-		host, ok := hosts[sum]
+		quota, ok := hosts[user]
+		lock.RUnlock()
+		if !ok {
+			log.Printf("[WEBSOCKET] [Unknown quota user: %s] [%s]", user, remote)
+			return
+		}
+		lock.RLock()
+		host, ok := quota[sum]
 		lock.RUnlock()
 		if !ok {
 			log.Printf("[WEBSOCKET] [Unknown host sum: %s] [%s]", sum, remote)
@@ -189,6 +202,22 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		io.Copy(conn, wsconn)
 		log.Printf("[WEBSOCKET] [Client disconnected: %s] [%s]", u, remote)
 	}
+}
+
+func info(r *http.Request) (string, string) {
+	remote := r.Header.Get("X-Forwarded-For")
+	if remote == "" {
+		remote, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	user := "unknown"
+	if guestAccessAllowed {
+		user = guestUserName
+	} else {
+		if u, _, ok := r.BasicAuth(); ok {
+			user = u
+		}
+	}
+	return user, remote
 }
 
 func ping(w http.ResponseWriter, _ *http.Request) {

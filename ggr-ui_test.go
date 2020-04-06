@@ -148,9 +148,10 @@ func TestPing(t *testing.T) {
 }
 
 func TestBrokenConfig(t *testing.T) {
-	m := map[string]string{
-		"md5sum": "://localhost",
-	}
+	m := map[string]map[string]string{
+		"unknown": map[string]string{
+			"md5sum": "://localhost",
+		}}
 	lock.Lock()
 	hosts = m
 	lock.Unlock()
@@ -194,9 +195,10 @@ func TestResponseTime(t *testing.T) {
 		responseTime = tmp
 	}(temp)
 	selenoid := NewSelenoid(silent)
-	m := map[string]string{
-		selenoid.Sum: selenoid.URL,
-	}
+	m := map[string]map[string]string{
+		"unknown": map[string]string{
+			selenoid.Sum: selenoid.URL,
+		}}
 	lock.Lock()
 	hosts = m
 	lock.Unlock()
@@ -275,7 +277,8 @@ func TestStatus(t *testing.T) {
 		},
 	}
 	for i, c := range cases {
-		m := map[string]string{}
+		m := map[string]map[string]string{
+			"unknown": map[string]string{}}
 		for _, handler := range c.Handlers {
 			selenoid := NewSelenoid(handler)
 			if handler != nil {
@@ -283,7 +286,7 @@ func TestStatus(t *testing.T) {
 			} else {
 				selenoid.Close()
 			}
-			m[selenoid.Sum] = selenoid.URL
+			m["unknown"][selenoid.Sum] = selenoid.URL
 		}
 		lock.Lock()
 		hosts = m

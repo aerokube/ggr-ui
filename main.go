@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -20,16 +21,18 @@ import (
 
 var (
 	lock  sync.RWMutex
-	hosts = make(map[string]string)
+	hosts map[string]map[string]string
 )
 
 var (
-	listen       string
-	timeout      time.Duration
-	responseTime time.Duration
-	limit        int
-	quotaDir     string
-	gracePeriod  time.Duration
+	listen             string
+	timeout            time.Duration
+	responseTime       time.Duration
+	limit              int
+	quotaDir           string
+	gracePeriod        time.Duration
+	guestAccessAllowed bool
+	guestUserName      string
 
 	version     bool
 	gitRevision = "HEAD"
@@ -40,12 +43,13 @@ var (
 
 func configure() error {
 	log.Printf("[INIT] [Loading quota files from %s]", quotaDir)
-	glob := fmt.Sprintf("%s%c%s", quotaDir, filepath.Separator, "*.xml")
+	pref, suff := fmt.Sprintf("%s%c", quotaDir, filepath.Separator), ".xml"
+	glob := pref + "*" + suff
 	files, _ := filepath.Glob(glob)
 	if len(files) == 0 {
 		return fmt.Errorf("no quota XML files found in %s", quotaDir)
 	}
-	newHosts := make(map[string]string)
+	newHosts := make(map[string]map[string]string)
 	for _, fn := range files {
 		file, err := ioutil.ReadFile(fn)
 		if err != nil {
@@ -57,15 +61,19 @@ func configure() error {
 			log.Printf("[INIT] [Error parsing configuration file %s: %v]", fn, err)
 			continue
 		}
+		quota := make(map[string]string)
 		for _, b := range browsers.Browsers {
 			for _, v := range b.Versions {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
-						newHosts[h.Sum()] = h.Route()
+						quota[h.Sum()] = h.Route()
 					}
 				}
 			}
 		}
+		user := strings.TrimPrefix(strings.TrimSuffix(fn, suff), pref)
+		newHosts[user] = quota
+		log.Printf("[INIT] [Loaded quota for user: %s]", user)
 	}
 	lock.Lock()
 	defer lock.Unlock()
@@ -74,6 +82,8 @@ func configure() error {
 }
 
 func init() {
+	flag.BoolVar(&guestAccessAllowed, "guests-allowed", false, "Allow guest (unauthenticated) users to access the grid")
+	flag.StringVar(&guestUserName, "guests-quota", "guest", "Which quota file to use for guests")
 	flag.StringVar(&listen, "listen", ":8888", "host and port to listen to")
 	flag.DurationVar(&timeout, "timeout", 30*time.Second, "request timeout")
 	flag.DurationVar(&responseTime, "response-time", 2*time.Second, "response time limit")
