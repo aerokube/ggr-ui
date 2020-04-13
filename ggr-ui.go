@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/aerokube/ggr/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/websocket"
 )
@@ -61,19 +62,22 @@ func status(w http.ResponseWriter, r *http.Request) {
 	done := make(chan Status)
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	go func(ctx context.Context, quota map[string]string) {
-		for sum, u := range quota {
+	go func(ctx context.Context, quota map[string]*config.Host) {
+		for sum, h := range quota {
 			select {
 			case ch <- struct{}{}:
-				go func(ctx context.Context, sum, u string) {
+				go func(ctx context.Context, sum string, h *config.Host) {
 					defer func() {
 						<-ch
 					}()
-					r, err := http.NewRequest(http.MethodGet, u+paths.Status, nil)
+					r, err := http.NewRequest(http.MethodGet, h.Route()+paths.Status, nil)
 					if err != nil {
 						rslt <- nil
 						log.Printf("[STATUS] [Failed to fetch status: %v] [%s]", err, remote)
 						return
+					}
+					if h.Username != "" {
+						r.SetBasicAuth(h.Username, h.Password)
 					}
 					ctx, cancel := context.WithTimeout(ctx, timeout)
 					defer cancel()
@@ -92,13 +96,13 @@ func status(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					rslt <- &result{sum, m}
-				}(ctx, sum, u)
+				}(ctx, sum, h)
 			case <-ctx.Done():
 				return
 			}
 		}
 	}(ctx, quota)
-	go func(ctx context.Context, quota map[string]string) {
+	go func(ctx context.Context, quota map[string]*config.Host) {
 		s := make(Status)
 	loop:
 		for i := 0; i < len(quota); i++ {
@@ -180,7 +184,7 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 			log.Printf("[WEBSOCKET] [Unknown host sum: %s] [%s]", sum, remote)
 			return
 		}
-		u, err := url.Parse(host + p + path[tail:])
+		u, err := url.Parse(host.Route() + p + path[tail:])
 		if err != nil {
 			log.Printf("[WEBSOCKET] [Failed to parse url %s: %v] [%s]", u, err, remote)
 			return

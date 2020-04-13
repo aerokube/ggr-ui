@@ -7,13 +7,21 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/aerokube/ggr/config"
 )
+
+var _ = func() bool {
+	testing.Init()
+	return true
+}()
 
 func init() {
 	gitRevision = "test-revision"
@@ -21,17 +29,22 @@ func init() {
 
 type Selenoid struct {
 	*httptest.Server
-	Host string
+	Host *config.Host
 	Sum  string
 }
 
 func NewSelenoid(mux http.Handler) *Selenoid {
 	s := httptest.NewServer(mux)
 	u, _ := url.Parse(s.URL)
+	host, p, _ := net.SplitHostPort(u.Host)
+	port, _ := strconv.ParseInt(p, 10, 32)
 	return &Selenoid{
 		Server: s,
-		Host:   u.Host,
-		Sum:    fmt.Sprintf("%x", md5.Sum([]byte(s.URL))),
+		Host: &config.Host{
+			Name: host,
+			Port: int(port),
+		},
+		Sum: fmt.Sprintf("%x", md5.Sum([]byte(s.URL))),
 	}
 }
 
@@ -148,9 +161,9 @@ func TestPing(t *testing.T) {
 }
 
 func TestBrokenConfig(t *testing.T) {
-	m := map[string]map[string]string{
-		"unknown": map[string]string{
-			"md5sum": "://localhost",
+	m := map[string]map[string]*config.Host{
+		"unknown": map[string]*config.Host{
+			"md5sum": &config.Host{Name: "://localhost"},
 		}}
 	lock.Lock()
 	hosts = m
@@ -195,9 +208,9 @@ func TestResponseTime(t *testing.T) {
 		responseTime = tmp
 	}(temp)
 	selenoid := NewSelenoid(silent)
-	m := map[string]map[string]string{
-		"unknown": map[string]string{
-			selenoid.Sum: selenoid.URL,
+	m := map[string]map[string]*config.Host{
+		"unknown": map[string]*config.Host{
+			selenoid.Sum: &config.Host{Name: selenoid.URL},
 		}}
 	lock.Lock()
 	hosts = m
@@ -277,8 +290,8 @@ func TestStatus(t *testing.T) {
 		},
 	}
 	for i, c := range cases {
-		m := map[string]map[string]string{
-			"unknown": map[string]string{}}
+		m := map[string]map[string]*config.Host{
+			"unknown": map[string]*config.Host{}}
 		for _, handler := range c.Handlers {
 			selenoid := NewSelenoid(handler)
 			if handler != nil {
@@ -286,7 +299,7 @@ func TestStatus(t *testing.T) {
 			} else {
 				selenoid.Close()
 			}
-			m["unknown"][selenoid.Sum] = selenoid.URL
+			m["unknown"][selenoid.Sum] = selenoid.Host
 		}
 		lock.Lock()
 		hosts = m

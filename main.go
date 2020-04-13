@@ -21,7 +21,7 @@ import (
 
 var (
 	lock  sync.RWMutex
-	hosts map[string]map[string]string
+	hosts map[string]map[string]*config.Host
 )
 
 var (
@@ -49,7 +49,7 @@ func configure() error {
 	if len(files) == 0 {
 		return fmt.Errorf("no quota XML files found in %s", quotaDir)
 	}
-	newHosts := make(map[string]map[string]string)
+	newHosts := make(map[string]map[string]*config.Host)
 	for _, fn := range files {
 		file, err := ioutil.ReadFile(fn)
 		if err != nil {
@@ -61,12 +61,12 @@ func configure() error {
 			log.Printf("[INIT] [Error parsing configuration file %s: %v]", fn, err)
 			continue
 		}
-		quota := make(map[string]string)
+		quota := make(map[string]*config.Host)
 		for _, b := range browsers.Browsers {
 			for _, v := range b.Versions {
 				for _, r := range v.Regions {
 					for _, h := range r.Hosts {
-						quota[h.Sum()] = h.Route()
+						quota[h.Sum()] = &h
 					}
 				}
 			}
