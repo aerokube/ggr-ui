@@ -1,6 +1,6 @@
 module github.com/aerokube/ggr-ui
 
-go 1.14
+go 1.15
 
 require (
 	github.com/aandryashin/reloader v0.0.0-20161127125235-da4f1b43ce40
