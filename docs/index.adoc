@@ -9,6 +9,8 @@
 :icons: font
 :source-highlighter: coderay
 :docinfo: shared
+:title: Ggr - The missing /status API for Ggr
+:description: A standalone daemon that automatically collects /status information from multiple Selenoid instances and returns it as a single /status API.
 :favicon: img/favicon.png
 
 This reference covers version: _{revnumber}_
