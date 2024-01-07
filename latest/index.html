@@ -664,20 +664,26 @@ Use only one of these commands depending on whether you have Docker installed.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>  -grace-period duration
-            graceful shutdown period (default 5m0s)
+<pre>  -authenticated-access-only
+    	Show statistics about all hosts only when credentials are provided
+  -grace-period duration
+    	graceful shutdown period (default 5m0s)
+  -guests-allowed
+    	Allow guest (unauthenticated) users to access the grid
+  -guests-quota string
+    	Which quota file to use for guests (default "guest")
   -limit int
-            simultaneous http requests (default 10)
+    	simultaneous http requests (default 10)
   -listen string
-            host and port to listen to (default &quot;:8888&quot;)
+    	host and port to listen to (default ":8888")
   -quota-dir string
-            quota directory (default &quot;quota&quot;)
+    	quota directory (default "quota")
   -response-time duration
-            response time limit (default 2s)
+    	response time limit (default 2s)
   -timeout duration
-            request timeout (default 30s)
+    	request timeout (default 30s)
   -version
-            Show version and exit</code></pre>
+    	Show version and exit</pre>
 </div>
 </div>
 </div>
@@ -770,7 +776,7 @@ $ docker build -t ggr-ui:latest .</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version latest<br>
-Last updated 2024-01-07 12:26:48 UTC
+Last updated 2024-01-07 13:20:31 UTC
 </div>
 </div>
 <!-- Global site tag (gtag.js) - Google Analytics -->
