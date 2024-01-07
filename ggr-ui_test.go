@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -65,7 +64,7 @@ func CheckPath(p string) (*url.URL, error) {
 }
 
 func ReadResponseBody(r io.Reader) ([]byte, error) {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %v", err)
 	}
@@ -232,10 +231,10 @@ var (
 		<-r.Context().Done()
 	}))
 	empty = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,"browsers":{"chrome":{"60.0":{}},"firefox":{"59.0":{}}}}`)
+		_, _ = fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,"browsers":{"chrome":{"60.0":{}},"firefox":{"59.0":{}}}}`)
 	}))
 	broken = http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,`)
+		_, _ = fmt.Fprint(w, `{"total":1,"used":0,"queued":0,"pending":0,`)
 	}))
 )
 
@@ -249,41 +248,41 @@ type Case struct {
 
 func TestStatus(t *testing.T) {
 	cases := []Case{
-		Case{
+		{
 			Name:     "ConnectionRefused",
 			Expected: 0,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{nil, nil, nil},
 		},
-		Case{
+		{
 			Name:     "Timeout",
 			Expected: 0,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{silent},
 		},
-		Case{
+		{
 			Name:           "ClientDisconnected",
 			Expected:       0,
 			ContextTimeout: 100 * time.Millisecond,
 			Handlers:       []http.Handler{silent},
 		},
-		Case{
+		{
 			Name:     "TwoHostsDown",
 			Expected: 1,
 			Handlers: []http.Handler{nil, nil, empty},
 		},
-		Case{
+		{
 			Name:     "TwoHostsBroken",
 			Expected: 1,
 			Handlers: []http.Handler{broken, broken, empty},
 		},
-		Case{
+		{
 			Name:     "TwoHostsNoAnswer",
 			Expected: 1,
 			Timeout:  100 * time.Millisecond,
 			Handlers: []http.Handler{silent, silent, empty},
 		},
-		Case{
+		{
 			Name:     "AllHostsUpAndRunning",
 			Expected: 3,
 			Handlers: []http.Handler{empty, empty, empty},
@@ -291,7 +290,7 @@ func TestStatus(t *testing.T) {
 	}
 	for i, c := range cases {
 		m := map[string]map[string]*config.Host{
-			"unknown": map[string]*config.Host{}}
+			"unknown": {}}
 		for _, handler := range c.Handlers {
 			selenoid := NewSelenoid(handler)
 			if handler != nil {

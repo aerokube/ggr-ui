@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -51,7 +50,7 @@ func configure() error {
 	}
 	newHosts := make(map[string]map[string]*config.Host)
 	for _, fn := range files {
-		file, err := ioutil.ReadFile(fn)
+		file, err := os.ReadFile(fn)
 		if err != nil {
 			log.Printf("[INIT] [Error reading configuration file %s: %v]", fn, err)
 			continue
@@ -108,7 +107,10 @@ func init() {
 	go func() {
 		for {
 			<-sig
-			configure()
+			err := configure()
+			if err != nil {
+				log.Printf("[INIT] [Failed to reload quota files: %v]", err)
+			}
 		}
 	}()
 }

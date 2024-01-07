@@ -122,7 +122,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	select {
 	case s := <-done:
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(s)
+		_ = json.NewEncoder(w).Encode(s)
 	case <-r.Context().Done():
 	}
 }
@@ -199,11 +199,11 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		defer conn.Close()
 		wsconn.PayloadType = websocket.BinaryFrame
 		go func() {
-			io.Copy(wsconn, conn)
-			wsconn.Close()
+			defer wsconn.Close()
+			_, _ = io.Copy(wsconn, conn)
 			log.Printf("[WEBSOCKET] [Closed websocket session to %s] [%s]", u, remote)
 		}()
-		io.Copy(conn, wsconn)
+		_, _ = io.Copy(conn, wsconn)
 		log.Printf("[WEBSOCKET] [Client disconnected: %s] [%s]", u, remote)
 	}
 }
