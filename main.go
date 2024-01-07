@@ -24,14 +24,15 @@ var (
 )
 
 var (
-	listen             string
-	timeout            time.Duration
-	responseTime       time.Duration
-	limit              int
-	quotaDir           string
-	gracePeriod        time.Duration
-	guestAccessAllowed bool
-	guestUserName      string
+	listen                  string
+	timeout                 time.Duration
+	responseTime            time.Duration
+	limit                   int
+	quotaDir                string
+	gracePeriod             time.Duration
+	authenticatedAccessOnly bool
+	guestAccessAllowed      bool
+	guestUserName           string
 
 	version     bool
 	gitRevision = "HEAD"
@@ -81,6 +82,7 @@ func configure() error {
 }
 
 func init() {
+	flag.BoolVar(&authenticatedAccessOnly, "authenticated-access-only", false, "Show statistics about all hosts only when credentials are provided")
 	flag.BoolVar(&guestAccessAllowed, "guests-allowed", false, "Allow guest (unauthenticated) users to access the grid")
 	flag.StringVar(&guestUserName, "guests-quota", "guest", "Which quota file to use for guests")
 	flag.StringVar(&listen, "listen", ":8888", "host and port to listen to")

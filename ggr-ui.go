@@ -51,7 +51,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	lock.RLock()
 	defer lock.RUnlock()
 	user, remote := info(r)
-	quota, ok := hosts[user]
+	quota, ok := userHosts(user)
 	if !ok {
 		log.Printf("[STATUS] [Unknown quota user: %s] [%s]", user, remote)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -127,6 +127,21 @@ func status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func userHosts(user string) (map[string]*config.Host, bool) {
+	if authenticatedAccessOnly {
+		quota, ok := hosts[user]
+		return quota, ok
+	}
+
+	ret := make(map[string]*config.Host)
+	for _, quota := range hosts {
+		for sum, host := range quota {
+			ret[sum] = host
+		}
+	}
+	return ret, true
+}
+
 func (cur Status) Add(sum string, m map[string]interface{}) {
 	for k, v := range m {
 		switch v.(type) {
@@ -171,7 +186,7 @@ func proxyWS(p string) func(wsconn *websocket.Conn) {
 		}
 		sum := path[head:tail]
 		lock.RLock()
-		quota, ok := hosts[user]
+		quota, ok := userHosts(user)
 		lock.RUnlock()
 		if !ok {
 			log.Printf("[WEBSOCKET] [Unknown quota user: %s] [%s]", user, remote)
