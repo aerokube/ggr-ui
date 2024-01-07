@@ -1,9 +1,15 @@
 == CLI Flags
 
 The following flags are supported by ```ggr-ui``` command:
-```
+----
+  -authenticated-access-only
+    	Show statistics about all hosts only when credentials are provided
   -grace-period duration
     	graceful shutdown period (default 5m0s)
+  -guests-allowed
+    	Allow guest (unauthenticated) users to access the grid
+  -guests-quota string
+    	Which quota file to use for guests (default "guest")
   -limit int
     	simultaneous http requests (default 10)
   -listen string
@@ -16,4 +22,4 @@ The following flags are supported by ```ggr-ui``` command:
     	request timeout (default 30s)
   -version
     	Show version and exit
-```
+----
