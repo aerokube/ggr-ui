@@ -3,6 +3,8 @@
 [![Release](https://img.shields.io/github/release/aerokube/ggr-ui.svg)](https://github.com/aerokube/ggr-ui/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/aerokube/ggr-ui.svg)](https://hub.docker.com/r/aerokube/ggr)
 
+**UNMAINTAINED**. Consider https://aerokube.com/moon/latest as alternative.
+
 Ggr UI is a standalone daemon that automatically collects `/status` information from multiple [Selenoid](https://github.com/aerokube/selenoid) instances and returns it as a single `/status` API. When this daemon is running you can use [Selenoid UI](https://github.com/aerokube/selenoid-ui) to see the state of the entire cluster.
 
 ## Complete Guide & Build Instructions
